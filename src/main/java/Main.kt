@@ -24,8 +24,8 @@ fun main() {
 
 fun suggestDrivers(passenger: Person, drivers: Collection<Person>, startPoint: Point): Collection<Person> {
     val passengerPoint = passenger.finishPoint
-    val result = mutableListOf<Person>()
-    val epsilon = 0.05
+    val result = mutableListOf<Pair<Person, Float>>()
+    val epsilon = 0.05 // it will be a part of driver class in future
     for (driver in drivers) {
         val driverPoint = driver.finishPoint
         val distance = abs(
@@ -39,10 +39,13 @@ fun suggestDrivers(passenger: Person, drivers: Collection<Person>, startPoint: P
         )
 
         if (distance <= epsilon) {
-            result.add(driver)
+            result.add(driver to distance)
         }
     }
-    return result
+
+    result.sortBy { it.second }
+
+    return result.map { it.first }
 }
 
 private fun readPoints(): Participants {
