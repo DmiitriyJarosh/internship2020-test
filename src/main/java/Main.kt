@@ -1,6 +1,9 @@
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.*
+import kotlin.math.abs
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 
 data class Point(val latitude: Float, val longitude: Float)
@@ -9,8 +12,9 @@ data class Person(val id: UUID, val finishPoint: Point)
 
 fun main() {
     val (passengers, drivers) = readPoints()
+    val startPoint = Point(0F, 0F)
     for (passenger in passengers) {
-        val suggestedDrivers = suggestDrivers(passenger, drivers)
+        val suggestedDrivers = suggestDrivers(passenger, drivers, startPoint)
         println("Passenger point: ${passenger.finishPoint.latitude}, ${passenger.finishPoint.longitude}")
         for (driver in suggestedDrivers) {
             println("  ${driver.finishPoint.latitude}, ${driver.finishPoint.longitude}")
@@ -18,8 +22,27 @@ fun main() {
     }
 }
 
-fun suggestDrivers(passenger: Person, drivers: Collection<Person>): Collection<Person> {
-    TODO("Implement me")
+fun suggestDrivers(passenger: Person, drivers: Collection<Person>, startPoint: Point): Collection<Person> {
+    val passengerPoint = passenger.finishPoint
+    val result = mutableListOf<Person>()
+    val epsilon = 0.05
+    for (driver in drivers) {
+        val driverPoint = driver.finishPoint
+        val distance = abs(
+                (driverPoint.longitude - startPoint.longitude) * passengerPoint.latitude
+                        - (driverPoint.latitude - startPoint.latitude) * passengerPoint.longitude
+                        + driverPoint.latitude * startPoint.longitude
+                        - driverPoint.longitude * startPoint.latitude
+        ) / sqrt(
+                (driverPoint.longitude - startPoint.longitude).pow(2)
+                        + (driverPoint.latitude - startPoint.latitude).pow(2)
+        )
+
+        if (distance <= epsilon) {
+            result.add(driver)
+        }
+    }
+    return result
 }
 
 private fun readPoints(): Participants {
